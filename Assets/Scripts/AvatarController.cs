@@ -14,6 +14,7 @@ public class AvatarController : NetworkBehaviour {
         NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     private NetworkVariable<Color> m_Color = new NetworkVariable<Color>(Color.black, 
         NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    private NetworkObject doorNetworkObj = null;
 
     // Start is called before the first frame update
     void Start()
@@ -38,15 +39,17 @@ public class AvatarController : NetworkBehaviour {
     void Update() {
         // sets color to network variable value
         if (m_Renderer.color != m_Color.Value) m_Renderer.color = m_Color.Value;
-        
-        if (!IsOwner) return;
-        
+
         // movement
-        if (Input.GetKey(KeyCode.LeftArrow)) LerpPosition(Vector3.left, movementSpeed);
-        if (Input.GetKey(KeyCode.RightArrow)) LerpPosition(Vector3.right, movementSpeed);
-        if (Input.GetKey(KeyCode.UpArrow)) LerpPosition(Vector3.up, movementSpeed);
-        if (Input.GetKey(KeyCode.DownArrow)) LerpPosition(Vector3.down, movementSpeed);
-        
+        if (Input.GetKey(KeyCode.LeftArrow)) LerpPosition(Vector3.left, movementSpeed, OwnerClientId);
+        if (Input.GetKey(KeyCode.RightArrow)) LerpPosition(Vector3.right, movementSpeed, OwnerClientId);
+        if (Input.GetKey(KeyCode.UpArrow)) LerpPosition(Vector3.up, movementSpeed, OwnerClientId);
+        if (Input.GetKey(KeyCode.DownArrow)) LerpPosition(Vector3.down, movementSpeed, OwnerClientId);
+
+        if (Input.GetKey(KeyCode.A) && !(doorNetworkObj == null)) VisibilityServerRpc();
+
+        if (Input.GetKey(KeyCode.S) && !(doorNetworkObj == null)) VisibilityHostServerRpc();
+
         // color change
         // if you need to change something not in transform, it's needed RPC calling
         // RPC calling executes the method in several clients (specified by RpcTarget)
@@ -54,20 +57,38 @@ public class AvatarController : NetworkBehaviour {
         if (Input.GetKeyDown(KeyCode.RightControl)) SpawnDoorServerRpc();
     }
 
-    void LerpPosition(Vector3 offset, float speed) {
-        Vector3 positionNow = transform.position;
-        transform.position = Vector3.Lerp(positionNow, positionNow +  offset, Time.deltaTime * speed);
+    [ServerRpc(RequireOwnership = false)]
+    void VisibilityHostServerRpc()
+    {
+        Debug.Log("Spawnea door: " + OwnerClientId);
+        doorNetworkObj.NetworkShow(1);
+        doorNetworkObj.NetworkShow(2);
     }
 
     [ServerRpc(RequireOwnership = false)]
+    void VisibilityServerRpc()
+    {
+        Debug.Log("Spawnea door: " + OwnerClientId);
+        doorNetworkObj.NetworkShow(OwnerClientId);
+    }
+
+    void LerpPosition(Vector3 offset, float speed, ulong OwnerClientId) {
+        Vector3 positionNow = transform.position;
+        transform.position = Vector3.Lerp(positionNow, positionNow +  offset, Time.deltaTime * speed);
+        Debug.Log("Se mueve el cliente: "+OwnerClientId);
+    }
+
+    [ServerRpc(RequireOwnership = true)]
     void SpawnDoorServerRpc()
     {
         SmartConsole.Log("spawn door");
         GameObject door = Instantiate(doorPrefab, m_Position.Value, Quaternion.identity);
         m_Position.Value += Vector3.right + Vector3.up;
-        door.GetComponent<NetworkObject>().Spawn();
+        doorNetworkObj = door.GetComponent<NetworkObject>();
+        doorNetworkObj.SpawnWithObservers = false;
+        doorNetworkObj.Spawn();
+        Debug.Log("Door reference: "+this.doorNetworkObj);
     }
-
     
     // [ServerRpc(RequireOwnership = false)]
     // void ChangeColorServerRpc(Color newColor)
