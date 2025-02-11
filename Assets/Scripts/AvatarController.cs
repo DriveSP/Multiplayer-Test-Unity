@@ -1,7 +1,5 @@
-using System.Collections;
 using System.Collections.Generic;
 using ED.SC;
-using Unity.Mathematics;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -37,45 +35,41 @@ public class AvatarController : NetworkBehaviour {
 
     // Update is called once per frame
     void Update() {
+        
         // sets color to network variable value
         if (m_Renderer.color != m_Color.Value) m_Renderer.color = m_Color.Value;
 
         // movement
-        if (Input.GetKey(KeyCode.LeftArrow)) LerpPosition(Vector3.left, movementSpeed, OwnerClientId);
-        if (Input.GetKey(KeyCode.RightArrow)) LerpPosition(Vector3.right, movementSpeed, OwnerClientId);
-        if (Input.GetKey(KeyCode.UpArrow)) LerpPosition(Vector3.up, movementSpeed, OwnerClientId);
-        if (Input.GetKey(KeyCode.DownArrow)) LerpPosition(Vector3.down, movementSpeed, OwnerClientId);
+        if (Input.GetKey(KeyCode.LeftArrow)) LerpPosition(Vector3.left, movementSpeed);
+        if (Input.GetKey(KeyCode.RightArrow)) LerpPosition(Vector3.right, movementSpeed);
+        if (Input.GetKey(KeyCode.UpArrow)) LerpPosition(Vector3.up, movementSpeed);
+        if (Input.GetKey(KeyCode.DownArrow)) LerpPosition(Vector3.down, movementSpeed);
 
-        if (Input.GetKey(KeyCode.A) && !(doorNetworkObj == null)) VisibilityServerRpc();
-
-        if (Input.GetKey(KeyCode.S) && !(doorNetworkObj == null)) VisibilityHostServerRpc();
+        if (Input.GetKey(KeyCode.A))
+        {
+            VisibilityServerRpc(NetworkManager.Singleton.LocalClientId);
+        }
 
         // color change
         // if you need to change something not in transform, it's needed RPC calling
         // RPC calling executes the method in several clients (specified by RpcTarget)
         // if (Input.GetKeyDown(KeyCode.RightControl)) m_Color.Value = m_Colors[2];
-        if (Input.GetKeyDown(KeyCode.RightControl)) SpawnDoorServerRpc();
+
+        if ((NetworkManager.Singleton.LocalClientId == 0) && Input.GetKeyDown(KeyCode.RightControl)) SpawnDoorServerRpc();
     }
 
-    [ServerRpc(RequireOwnership = false)]
-    void VisibilityHostServerRpc()
+    [Rpc(SendTo.Server)]
+    void VisibilityServerRpc(ulong clientId)
     {
-        Debug.Log("Spawnea door: " + OwnerClientId);
-        doorNetworkObj.NetworkShow(1);
-        doorNetworkObj.NetworkShow(2);
+        Debug.Log("Client: " + clientId);
+        SmartConsole.Log("Client: "+clientId);
+        doorNetworkObj.NetworkShow(clientId);
     }
 
-    [ServerRpc(RequireOwnership = false)]
-    void VisibilityServerRpc()
-    {
-        Debug.Log("Spawnea door: " + OwnerClientId);
-        doorNetworkObj.NetworkShow(OwnerClientId);
-    }
-
-    void LerpPosition(Vector3 offset, float speed, ulong OwnerClientId) {
+    void LerpPosition(Vector3 offset, float speed) {
         Vector3 positionNow = transform.position;
         transform.position = Vector3.Lerp(positionNow, positionNow +  offset, Time.deltaTime * speed);
-        Debug.Log("Se mueve el cliente: "+OwnerClientId);
+        Debug.Log("Se mueve el cliente: "+ NetworkManager.Singleton.LocalClientId);
     }
 
     [ServerRpc(RequireOwnership = true)]
