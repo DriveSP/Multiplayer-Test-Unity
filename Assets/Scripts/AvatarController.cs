@@ -17,6 +17,7 @@ public class AvatarController : NetworkBehaviour {
     // Start is called before the first frame update
     void Start()
     {
+
         SmartConsole.Log($"ClientId {OwnerClientId}");
         if (OwnerClientId > 2)
         {
@@ -55,7 +56,7 @@ public class AvatarController : NetworkBehaviour {
         // RPC calling executes the method in several clients (specified by RpcTarget)
         // if (Input.GetKeyDown(KeyCode.RightControl)) m_Color.Value = m_Colors[2];
 
-        if ((NetworkManager.Singleton.LocalClientId == 0) && Input.GetKeyDown(KeyCode.RightControl)) SpawnDoorServerRpc();
+        if (IsHost && Input.GetKeyDown(KeyCode.RightControl)) SpawnDoorServerRpc();
     }
 
     [Rpc(SendTo.Server)]
