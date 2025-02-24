@@ -1,4 +1,5 @@
 using ED.SC;
+using System.Collections.Generic;
 using Unity.Services.Authentication;
 using Unity.Services.Core;
 using Unity.Services.Lobbies;
@@ -7,6 +8,8 @@ using UnityEngine;
 
 public class TestLobby : MonoBehaviour
 {
+    private Lobby hostLobby;
+    private float heartBeatTimer;
 
     private async void Start()
     {
@@ -20,15 +23,38 @@ public class TestLobby : MonoBehaviour
         await AuthenticationService.Instance.SignInAnonymouslyAsync();
     }
 
+    private void Update()
+    {
+        HandleHeartBeatLobby();
+    }
+
+    private async void HandleHeartBeatLobby()
+    {
+        if (hostLobby != null)
+        {
+            heartBeatTimer -= Time.deltaTime;
+            if (heartBeatTimer < 0f)
+            {
+                float heartBeatTimerMax = 15;
+                heartBeatTimer = heartBeatTimerMax;
+
+                await LobbyService.Instance.SendHeartbeatPingAsync(hostLobby.Id);
+                Debug.Log("HeartBeat");
+            }
+        }
+
+    }
+
     [Command]
     private async void CreateLobby()
     {
         try
         {
             string lobbyName = "LobbyName";
-            int maxPlayers = 2;
+            int maxPlayers = 1;
             Lobby lobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, maxPlayers);
 
+            hostLobby = lobby;
             SmartConsole.Log("Create Lobby! " + lobbyName + " " + lobby.MaxPlayers);
         }
         catch (LobbyServiceException e)
@@ -42,7 +68,21 @@ public class TestLobby : MonoBehaviour
     {
         try
         {
-            QueryResponse queryResponse = await LobbyService.Instance.QueryLobbiesAsync();
+
+            QueryLobbiesOptions queryLobbiesOptions = new QueryLobbiesOptions
+            {
+                Count = 15,
+                Filters = new List<QueryFilter>
+                {
+                    new QueryFilter(QueryFilter.FieldOptions.AvailableSlots,"0",QueryFilter.OpOptions.GT)
+                },
+                Order = new List<QueryOrder>
+                {
+                    new QueryOrder(false, QueryOrder.FieldOptions.Created)
+                }
+            };
+
+            QueryResponse queryResponse = await LobbyService.Instance.QueryLobbiesAsync(queryLobbiesOptions);
 
             SmartConsole.Log("Lobbies found: " + queryResponse.Results.Count);
             foreach (Lobby lobby in queryResponse.Results)
