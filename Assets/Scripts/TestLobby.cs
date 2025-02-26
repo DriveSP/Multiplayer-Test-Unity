@@ -92,7 +92,7 @@ public class TestLobby : MonoBehaviour
             hostLobby = lobby;
             joinedLobby = lobby;
             SmartConsole.Log("Create Lobby! " + lobbyName + " " + lobby.MaxPlayers + " " + lobby.Id + " " + lobby.LobbyCode + " " + lobby.Data["GameMode"].Value + " " + lobby.Data["Map"].Value);
-            PrintPlayers(hostLobby);
+            PrintPlayersLobby(hostLobby);
         }
         catch (LobbyServiceException e)
         {
@@ -179,7 +179,7 @@ public class TestLobby : MonoBehaviour
             joinedLobby = lobbyJoined;
             SmartConsole.Log("Joined quickly");
 
-            PrintPlayers(lobbyJoined);
+            PrintPlayersLobby(lobbyJoined);
         }
         catch (LobbyServiceException e)
         {
@@ -187,13 +187,7 @@ public class TestLobby : MonoBehaviour
         }
     }
 
-    [Command]
-    private void PrintPlayers()
-    {
-        PrintPlayers(joinedLobby);
-    }
-
-    private void PrintPlayers(Lobby lobby)
+    private void PrintPlayersLobby(Lobby lobby)
     {
         try
         {
@@ -207,6 +201,12 @@ public class TestLobby : MonoBehaviour
         {
             Debug.Log(e);
         }
+    }
+
+    [Command]
+    private void PrintPlayers()
+    {
+        PrintPlayersLobby(joinedLobby);
     }
 
     private Player GetPlayers()
@@ -232,7 +232,7 @@ public class TestLobby : MonoBehaviour
                 }
             });
             joinedLobby = hostLobby;
-            PrintPlayers(hostLobby);
+            PrintPlayersLobby(hostLobby);
         }
         catch (LobbyServiceException e)
         {
@@ -252,7 +252,25 @@ public class TestLobby : MonoBehaviour
                 }
             });
             joinedLobby = hostLobby;
-            PrintPlayers(hostLobby);
+            PrintPlayersLobby(hostLobby);
+        }
+        catch (LobbyServiceException e)
+        {
+            Debug.Log(e);
+        }
+    }
+
+    [Command]
+    private async void UpdateHost()
+    {
+        try
+        {
+            hostLobby = await LobbyService.Instance.UpdateLobbyAsync(hostLobby.Id, new UpdateLobbyOptions
+            {
+                HostId = joinedLobby.Players[1].Id,
+            });
+            joinedLobby = hostLobby;
+            PrintPlayersLobby(hostLobby);
         }
         catch (LobbyServiceException e)
         {
