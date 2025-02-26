@@ -51,7 +51,7 @@ public class TestLobby : MonoBehaviour
         try
         {
             string lobbyName = "LobbyName";
-            int maxPlayers = 1;
+            int maxPlayers = 4;
             Lobby lobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, maxPlayers);
 
             hostLobby = lobby;
@@ -69,7 +69,7 @@ public class TestLobby : MonoBehaviour
         try
         {
 
-            QueryLobbiesOptions queryLobbiesOptions = new QueryLobbiesOptions
+            /*QueryLobbiesOptions queryLobbiesOptions = new QueryLobbiesOptions
             {
                 Count = 15,
                 Filters = new List<QueryFilter>
@@ -80,9 +80,9 @@ public class TestLobby : MonoBehaviour
                 {
                     new QueryOrder(false, QueryOrder.FieldOptions.Created)
                 }
-            };
+            };*/
 
-            QueryResponse queryResponse = await LobbyService.Instance.QueryLobbiesAsync(queryLobbiesOptions);
+            QueryResponse queryResponse = await LobbyService.Instance.QueryLobbiesAsync();
 
             SmartConsole.Log("Lobbies found: " + queryResponse.Results.Count);
             foreach (Lobby lobby in queryResponse.Results)
@@ -94,6 +94,23 @@ public class TestLobby : MonoBehaviour
         {  
             Debug.Log(e); 
         } 
+    }
+
+    [Command]
+    private async void JoinServer()
+    {
+        try
+        {        
+            QueryResponse queryResponse = await LobbyService.Instance.QueryLobbiesAsync();
+
+            await LobbyService.Instance.JoinLobbyByIdAsync(queryResponse.Results[0].Id);
+
+            SmartConsole.Log("Lobby joined");
+        }
+        catch (LobbyServiceException e)
+        {
+            Debug.Log(e);
+        }
     }
 
 }

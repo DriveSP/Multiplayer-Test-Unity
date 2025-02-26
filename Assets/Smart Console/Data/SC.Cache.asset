@@ -189,6 +189,16 @@ MonoBehaviour:
       MethodName: PrintHelp
       Parameters: []
       Flags: 24
+  - Name: JoinServer
+    Description: 
+    TargetType: 0
+    Group: Default
+    SerializableMethod:
+      Type:
+        Data: 0051546573744c6f6262792c20417373656d626c792d4353686172702c2056657273696f6e3d302e302e302e302c2043756c747572653d6e65757472616c2c205075626c69634b6579546f6b656e3d6e756c6c
+      MethodName: JoinServer
+      Parameters: []
+      Flags: 36
   - Name: ListLobbies
     Description: 
     TargetType: 0
