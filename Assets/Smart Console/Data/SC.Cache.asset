@@ -199,6 +199,17 @@ MonoBehaviour:
       MethodName: JoinServer
       Parameters: []
       Flags: 36
+  - Name: JoinServerCode
+    Description: 
+    TargetType: 0
+    Group: Default
+    SerializableMethod:
+      Type:
+        Data: 0051546573744c6f6262792c20417373656d626c792d4353686172702c2056657273696f6e3d302e302e302e302c2043756c747572653d6e65757472616c2c205075626c69634b6579546f6b656e3d6e756c6c
+      MethodName: JoinServerCode
+      Parameters:
+      - Data: 005a53797374656d2e537472696e672c206d73636f726c69622c2056657273696f6e3d342e302e302e302c2043756c747572653d6e65757472616c2c205075626c69634b6579546f6b656e3d62373761356335363139333465303839
+      Flags: 36
   - Name: ListLobbies
     Description: 
     TargetType: 0
@@ -231,6 +242,16 @@ MonoBehaviour:
       Parameters:
       - Data: 005953797374656d2e496e7433322c206d73636f726c69622c2056657273696f6e3d342e302e302e302c2043756c747572653d6e65757472616c2c205075626c69634b6579546f6b656e3d62373761356335363139333465303839
       Flags: 24
+  - Name: QuickJoinServer
+    Description: 
+    TargetType: 0
+    Group: Default
+    SerializableMethod:
+      Type:
+        Data: 0051546573744c6f6262792c20417373656d626c792d4353686172702c2056657273696f6e3d302e302e302e302c2043756c747572653d6e65757472616c2c205075626c69634b6579546f6b656e3d6e756c6c
+      MethodName: QuickJoinServer
+      Parameters: []
+      Flags: 36
   - Name: quit
     Description: Quits the application
     TargetType: 0
