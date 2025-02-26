@@ -9,7 +9,9 @@ using UnityEngine;
 public class TestLobby : MonoBehaviour
 {
     private Lobby hostLobby;
+    private Lobby joinedLobby;
     private float heartBeatTimer;
+    private float lobbyUpdateTimer;
     private string playerName;
 
     private async void Start()
@@ -29,6 +31,7 @@ public class TestLobby : MonoBehaviour
     private void Update()
     {
         HandleHeartBeatLobby();
+        HandleUpdateLobby();
     }
 
     private async void HandleHeartBeatLobby()
@@ -48,6 +51,24 @@ public class TestLobby : MonoBehaviour
 
     }
 
+    private async void HandleUpdateLobby()
+    {
+        if (joinedLobby != null)
+        {
+            lobbyUpdateTimer -= Time.deltaTime;
+            if (lobbyUpdateTimer < 0f)
+            {
+                float lobbyUpdateTimerMax = 1.1f;
+                lobbyUpdateTimer = lobbyUpdateTimerMax;
+
+                Lobby lobby = await LobbyService.Instance.GetLobbyAsync(joinedLobby.Id);
+                joinedLobby = lobby;
+                Debug.Log("Lobby updated");
+            }
+        }
+
+    }
+
     [Command]
     private async void CreateLobby()
     {
@@ -58,12 +79,19 @@ public class TestLobby : MonoBehaviour
             CreateLobbyOptions createLobbyOptions = new CreateLobbyOptions
             {
                 IsPrivate = false,
-                Player = GetPlayers()
+                Player = GetPlayers(),
+                Data = new Dictionary<string, DataObject>
+                {
+                    {"GameMode", new DataObject(DataObject.VisibilityOptions.Public, "CaptureTheFlag") },
+                    {"Map", new DataObject(DataObject.VisibilityOptions.Public, "Valhalla") }
+                }
             };
+
             Lobby lobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, maxPlayers, createLobbyOptions);
 
             hostLobby = lobby;
-            SmartConsole.Log("Create Lobby! " + lobbyName + " " + lobby.MaxPlayers + " " + lobby.Id + " " + lobby.LobbyCode);
+            joinedLobby = lobby;
+            SmartConsole.Log("Create Lobby! " + lobbyName + " " + lobby.MaxPlayers + " " + lobby.Id + " " + lobby.LobbyCode + " " + lobby.Data["GameMode"].Value + " " + lobby.Data["Map"].Value);
             PrintPlayers(hostLobby);
         }
         catch (LobbyServiceException e)
@@ -112,7 +140,7 @@ public class TestLobby : MonoBehaviour
         {
             QueryResponse queryResponse = await LobbyService.Instance.QueryLobbiesAsync();
             
-            await LobbyService.Instance.JoinLobbyByIdAsync(queryResponse.Results[0].Id);
+            joinedLobby = await LobbyService.Instance.JoinLobbyByIdAsync(queryResponse.Results[0].Id);
             SmartConsole.Log("Lobby joined");
         }
         catch (LobbyServiceException e)
@@ -128,7 +156,7 @@ public class TestLobby : MonoBehaviour
         {
             QueryResponse queryResponse = await LobbyService.Instance.QueryLobbiesAsync();
 
-            await LobbyService.Instance.JoinLobbyByCodeAsync(lobbyCode);
+            joinedLobby = await LobbyService.Instance.JoinLobbyByCodeAsync(lobbyCode);
 
             SmartConsole.Log("Lobby joined with code: " + lobbyCode);
         }
@@ -149,6 +177,7 @@ public class TestLobby : MonoBehaviour
                 Player = GetPlayers()
             };
             Lobby lobbyJoined = await LobbyService.Instance.QuickJoinLobbyAsync(quickJoinLobbyOptions);
+            joinedLobby = lobbyJoined;
             SmartConsole.Log("Joined quickly");
 
             PrintPlayers(lobbyJoined);
@@ -159,11 +188,17 @@ public class TestLobby : MonoBehaviour
         }
     }
 
+    [Command]
+    private void PrintPlayers()
+    {
+        PrintPlayers(joinedLobby);
+    }
+
     private void PrintPlayers(Lobby lobby)
     {
         try
         {
-            SmartConsole.Log("Players in lobby: " + lobby.Name);
+            SmartConsole.Log("Players in lobby: " + lobby.Name + " " + lobby.Data["GameMode"].Value + " " + lobby.Data["Map"].Value);
             foreach (Player player in lobby.Players)
             {
                 SmartConsole.Log("Player: " + player.Id + " Name: " + player.Data["PlayerName"].Value);
@@ -186,4 +221,23 @@ public class TestLobby : MonoBehaviour
         };
     }
 
+    [Command]
+    private async void UpdateLobbyGameMode(string gameMode)
+    {
+        try
+        {
+            hostLobby = await LobbyService.Instance.UpdateLobbyAsync(hostLobby.Id, new UpdateLobbyOptions {
+                Data = new Dictionary<string, DataObject>
+                {
+                    {"GameMode", new DataObject(DataObject.VisibilityOptions.Public, gameMode) }
+                }
+            });
+            joinedLobby = hostLobby;
+            PrintPlayers(hostLobby);
+        }
+        catch (LobbyServiceException e)
+        {
+            Debug.Log(e);
+        }
+    }
 }
