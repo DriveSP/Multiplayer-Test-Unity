@@ -167,7 +167,6 @@ public class TestLobby : MonoBehaviour
     }
 
     [Command]
-
     private async void QuickJoinServer()
     {
         try
@@ -240,4 +239,51 @@ public class TestLobby : MonoBehaviour
             Debug.Log(e);
         }
     }
+    [Command]
+    private async void UpdatePlayerName(string playerName)
+    {
+        try
+        {
+            hostLobby = await LobbyService.Instance.UpdatePlayerAsync(joinedLobby.Id, AuthenticationService.Instance.PlayerId, new UpdatePlayerOptions
+            {
+                Data = new Dictionary<string, PlayerDataObject>
+                {
+                    {"PlayerName", new PlayerDataObject (PlayerDataObject.VisibilityOptions.Member, playerName)}
+                }
+            });
+            joinedLobby = hostLobby;
+            PrintPlayers(hostLobby);
+        }
+        catch (LobbyServiceException e)
+        {
+            Debug.Log(e);
+        }
+    }
+
+    [Command]
+    private async void KickLobby()
+    {
+        try
+        {
+            await LobbyService.Instance.RemovePlayerAsync(joinedLobby.Id, joinedLobby.Players[1].Id);
+        }
+        catch (LobbyServiceException e)
+        {
+            Debug.Log(e);
+        }
+    }
+
+    [Command]
+    private async void LeaveLobby()
+    {
+        try
+        {
+            await LobbyService.Instance.RemovePlayerAsync(joinedLobby.Id, AuthenticationService.Instance.PlayerId);
+        }
+        catch (LobbyServiceException e)
+        {
+            Debug.Log(e);
+        }
+    }
+
 }
