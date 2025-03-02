@@ -12,10 +12,13 @@ public class TestLobby : MonoBehaviour
     private Lobby joinedLobby;
     private float heartBeatTimer;
     private float lobbyUpdateTimer;
+    public UIScript uiScript;
     private string playerName;
 
     private async void Start()
     {
+        playerName = uiScript.playerName;
+
         await UnityServices.InitializeAsync();
 
         AuthenticationService.Instance.SignedIn += () =>
@@ -24,7 +27,6 @@ public class TestLobby : MonoBehaviour
         };
         await AuthenticationService.Instance.SignInAnonymouslyAsync();
 
-        playerName = "Jairo" + UnityEngine.Random.Range(10, 999);
         SmartConsole.Log("Your player name is: "+playerName);
     }
 
