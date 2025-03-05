@@ -10,7 +10,7 @@ public class UIScript : MonoBehaviour
 {
     public string playerName { get; private set; }
     public GameObject lobby, playerPanel, lobbyPanel, hostPanel;
-    public TextMeshProUGUI title;
+    public TextMeshProUGUI title, textField;
 
     private Lobby hostLobby;
     private Lobby joinedLobby;
@@ -19,28 +19,19 @@ public class UIScript : MonoBehaviour
 
     public void PlayerName(string nPlayerName)
     {
+        ChangePlayerName(nPlayerName);
+    }
+
+    public void ChangePlayerName(string nPlayerName)
+    {
         this.playerName = nPlayerName;
         Debug.Log(nPlayerName);
     }
 
-    public async void ChangePlayerName(string nPlayerName)
+    public void ChangeName()
     {
-        try
-        {
-            hostLobby = await LobbyService.Instance.UpdatePlayerAsync(joinedLobby.Id, AuthenticationService.Instance.PlayerId, new UpdatePlayerOptions
-            {
-                Data = new Dictionary<string, PlayerDataObject>
-                {
-                    {"PlayerName", new PlayerDataObject (PlayerDataObject.VisibilityOptions.Member, nPlayerName)}
-                }
-            });
-            joinedLobby = hostLobby;
-            PrintPlayersLobby(hostLobby);
-        }
-        catch (LobbyServiceException e)
-        {
-            Debug.Log(e);
-        }
+        textField.text = "";
+        Debug.Log("Name changed");
     }
 
     public void EnterLobby()
