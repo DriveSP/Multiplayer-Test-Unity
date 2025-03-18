@@ -11,6 +11,8 @@ public class LootBag : MonoBehaviour
         
     }
 
+    //Filtra los objetos de la lista según su dropChance. Si el dropChance es 40, solamente añade a la nueva lista 
+    //el rating de objetos de mayor de 50%.
     Loot GetDroppedItem()
     {
         int randomNumber = Random.Range(1, 101);
@@ -31,6 +33,7 @@ public class LootBag : MonoBehaviour
         return null;
     }
 
+    //Escoge uno al azar de los que está en la lista
     public void InstantiateLoot(Vector3 spawnPosition)
     {
         Loot droppedItem = GetDroppedItem();
