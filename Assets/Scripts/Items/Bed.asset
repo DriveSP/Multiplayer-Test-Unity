@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lootSprite: {fileID: 8387867981351154326, guid: f88c4ce29514b5b4985a14abdc288c45, type: 3}
   lootName: Bed
-  dropChance: 20
+  dropChance: 80

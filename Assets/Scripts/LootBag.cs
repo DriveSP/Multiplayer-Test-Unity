@@ -6,10 +6,6 @@ public class LootBag : MonoBehaviour
 {
     public GameObject droppedItemPrefab;
     public List<Loot> lootsList = new List<Loot>();
-    void Start()
-    {
-        
-    }
 
     //Filtra los objetos de la lista según su dropChance. Si el dropChance es 40, solamente añade a la nueva lista 
     //el rating de objetos de mayor de 50%.
