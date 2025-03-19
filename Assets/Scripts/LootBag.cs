@@ -25,7 +25,7 @@ public class LootBag : MonoBehaviour
             Loot droppedItem = possibleItems[Random.Range(0, possibleItems.Count)];
             return droppedItem;
         }
-        Debug.Log("No loot dropped");
+        Debug.Log("Loot vacío");
         return null;
     }
 
